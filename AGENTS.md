@@ -2,13 +2,15 @@
 
 ## Cursor Cloud specific instructions
 
-This repository ("Algebrary") is currently a **greenfield project** with no application code, build system, or dependencies. The repo contains only a `README.md` placeholder.
+**Algebrary (万物方程)** is a web game built with Vite + React + TypeScript. Players combine real-world concepts using arithmetic operations (+, -, ×, ÷), powered by AI (OpenAI-compatible APIs).
 
-### Current state
-- **No tech stack** has been chosen yet — no `package.json`, `requirements.txt`, `Cargo.toml`, or similar.
-- **No services** to start, no tests to run, no linter configured.
-- **No Docker/container** setup exists.
+### Running the app
+- `pnpm dev` starts the Vite dev server on port 5173 (binds `0.0.0.0`).
+- `pnpm build` runs `tsc -b && vite build` for production builds.
+- `pnpm lint` runs ESLint with flat config.
 
-### For future agents
-- Once a tech stack is chosen and code is added, update this file with service startup instructions, test commands, and any non-obvious caveats.
-- The update script (`SetupVmEnvironment`) is currently a no-op (`echo "No dependencies to install"`). Replace it with the appropriate dependency install command (e.g., `npm install`, `pip install -r requirements.txt`) once dependencies are introduced.
+### Key notes
+- The game requires an AI API key to compute equations. Without one, the UI still works but the "= 运算 =" button shows an error toast.
+- Game state (elements, equations, achievements, AI config) persists in `localStorage`.
+- The `pnpm.onlyBuiltDependencies` field in `package.json` allows `esbuild` postinstall to run; this is required for Vite.
+- No backend server — all AI calls are made directly from the browser to the user-configured API endpoint.
