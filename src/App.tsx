@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react'
 import type { Element, Operator, AIConfig, Equation, AchievementContext } from './types'
-import { STARTER_ELEMENTS } from './types'
+import { pickRandomStarters } from './types'
 import { ACHIEVEMENTS } from './achievements'
 import {
   loadElements,
@@ -144,8 +144,21 @@ export default function App() {
     addToast('✅', '设置已保存', `模型: ${config.model}`, 'discovery')
   }
 
+  function handleShuffleStarters() {
+    const discovered = elements.filter((e) => !e.isStarter)
+    const newStarters = pickRandomStarters()
+    const newElements = [...newStarters, ...discovered]
+    setElements(newElements)
+    saveElements(newElements)
+    setLeft(null)
+    setRight(null)
+    nextSlot.current = 'left'
+    const names = newStarters.map((e) => e.emoji).join(' ')
+    addToast('🎲', '初始元素已刷新', names, 'discovery')
+  }
+
   function handleResetData() {
-    const starterElements = [...STARTER_ELEMENTS]
+    const starterElements = pickRandomStarters()
     setElements(starterElements)
     setEquations([])
     setUnlockedAchievements([])
@@ -154,7 +167,7 @@ export default function App() {
     saveElements(starterElements)
     saveEquations([])
     saveAchievements([])
-    addToast('🔄', '数据已重置', '所有进度已清除，初始元素已恢复', 'discovery')
+    addToast('🔄', '数据已重置', '所有进度已清除，随机初始元素已生成', 'discovery')
   }
 
   const selectedId = left && !right ? left.id : null
@@ -177,6 +190,7 @@ export default function App() {
           elements={elements}
           selectedId={selectedId}
           onSelect={handleSelectElement}
+          onShuffle={handleShuffleStarters}
         />
         <EquationBoard
           left={left}

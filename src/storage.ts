@@ -1,5 +1,5 @@
 import type { Element, Equation, AIConfig } from './types'
-import { STARTER_ELEMENTS, DEFAULT_AI_CONFIG } from './types'
+import { pickRandomStarters, DEFAULT_AI_CONFIG } from './types'
 
 const STORAGE_KEYS = {
   elements: 'algebrary_elements',
@@ -28,7 +28,11 @@ function safeSet(key: string, value: unknown): void {
 
 export function loadElements(): Element[] {
   const saved = safeGet<Element[]>(STORAGE_KEYS.elements, [])
-  if (saved.length === 0) return [...STARTER_ELEMENTS]
+  if (saved.length === 0) {
+    const starters = pickRandomStarters()
+    saveElements(starters)
+    return starters
+  }
   return saved
 }
 
