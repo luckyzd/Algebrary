@@ -5,12 +5,14 @@ interface ElementLibraryProps {
   elements: Element[]
   selectedId: string | null
   onSelect: (el: Element) => void
+  onShuffle: () => void
 }
 
 export default function ElementLibrary({
   elements,
   selectedId,
   onSelect,
+  onShuffle,
 }: ElementLibraryProps) {
   const [search, setSearch] = useState('')
 
@@ -24,6 +26,9 @@ export default function ElementLibrary({
     )
   }, [elements, search])
 
+  const starterCount = elements.filter((e) => e.isStarter).length
+  const discoveredCount = elements.length - starterCount
+
   return (
     <div className="library">
       <div className="library-header">
@@ -31,7 +36,7 @@ export default function ElementLibrary({
         <span className="library-count">{elements.length}</span>
       </div>
 
-      <div className="library-search">
+      <div className="library-toolbar">
         <input
           type="text"
           placeholder="搜索元素..."
@@ -39,20 +44,38 @@ export default function ElementLibrary({
           onChange={(e) => setSearch(e.target.value)}
           className="search-input"
         />
+        <button
+          className="shuffle-btn"
+          onClick={onShuffle}
+          title="随机更换初始元素（保留已发现的元素）"
+        >
+          🎲
+        </button>
       </div>
 
+      {discoveredCount > 0 && (
+        <div className="library-tabs">
+          <span className="tab-label">
+            🏠 初始 {starterCount} · ✨ 发现 {discoveredCount}
+          </span>
+        </div>
+      )}
+
       <div className="library-grid">
-        {filtered.map((el) => (
-          <button
-            key={el.id}
-            className={`element-card ${selectedId === el.id ? 'selected' : ''} ${el.isStarter ? 'starter' : 'discovered'}`}
-            onClick={() => onSelect(el)}
-            title={`${el.name}: ${el.description}`}
-          >
-            <span className="element-emoji">{el.emoji}</span>
-            <span className="element-name">{el.name}</span>
-          </button>
-        ))}
+        {filtered.map((el) => {
+          const rarityClass = el.rarity ? `rarity-${el.rarity}` : ''
+          return (
+            <button
+              key={el.id}
+              className={`element-card ${selectedId === el.id ? 'selected' : ''} ${el.isStarter ? 'starter' : 'discovered'} ${rarityClass}`}
+              onClick={() => onSelect(el)}
+              title={`${el.name}: ${el.description}`}
+            >
+              <span className="element-emoji">{el.emoji}</span>
+              <span className="element-name">{el.name}</span>
+            </button>
+          )
+        })}
         {filtered.length === 0 && (
           <div className="library-empty">没有找到匹配的元素</div>
         )}
