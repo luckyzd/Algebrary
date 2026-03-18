@@ -89,4 +89,25 @@ export const ACHIEVEMENTS: Achievement[] = [
     emoji: '🚀',
     check: (ctx) => ctx.equations.length >= 50,
   },
+  {
+    id: 'first_rare',
+    name: '不同凡响',
+    description: '发现第一个稀有元素',
+    emoji: '🔵',
+    check: (ctx) => ctx.elements.some((e) => e.rarity === 'rare' || e.rarity === 'epic' || e.rarity === 'legendary'),
+  },
+  {
+    id: 'first_epic',
+    name: '史诗时刻',
+    description: '发现第一个史诗元素',
+    emoji: '🟣',
+    check: (ctx) => ctx.elements.some((e) => e.rarity === 'epic' || e.rarity === 'legendary'),
+  },
+  {
+    id: 'first_legendary',
+    name: '传说降临',
+    description: '发现第一个传说元素',
+    emoji: '🌟',
+    check: (ctx) => ctx.elements.some((e) => e.rarity === 'legendary'),
+  },
 ]

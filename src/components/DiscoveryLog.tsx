@@ -1,4 +1,5 @@
 import type { Equation } from '../types'
+import { RARITY_LABELS } from '../types'
 
 interface DiscoveryLogProps {
   equations: Equation[]
@@ -29,7 +30,7 @@ export default function DiscoveryLog({ equations, onClose }: DiscoveryLogProps) 
           ) : (
             <div className="log-list">
               {sorted.map((eq, i) => (
-                <div key={i} className="log-item">
+                <div key={i} className={`log-item ${eq.result.rarity ? `rarity-${eq.result.rarity}` : ''}`}>
                   <div className="log-equation">
                     <span className="log-element">
                       {eq.left.emoji} {eq.left.name}
@@ -39,9 +40,14 @@ export default function DiscoveryLog({ equations, onClose }: DiscoveryLogProps) 
                       {eq.right.emoji} {eq.right.name}
                     </span>
                     <span className="log-equals">=</span>
-                    <span className="log-result">
+                    <span className={`log-result ${eq.result.rarity ? `text-${eq.result.rarity}` : ''}`}>
                       {eq.result.emoji} {eq.result.name}
                     </span>
+                    {eq.result.rarity && eq.result.rarity !== 'common' && (
+                      <span className={`log-rarity-tag rarity-tag-${eq.result.rarity}`}>
+                        {RARITY_LABELS[eq.result.rarity]}
+                      </span>
+                    )}
                   </div>
                   <div className="log-desc">{eq.result.description}</div>
                   <div className="log-time">

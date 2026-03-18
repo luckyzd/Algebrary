@@ -62,17 +62,20 @@ export default function ElementLibrary({
       )}
 
       <div className="library-grid">
-        {filtered.map((el) => (
-          <button
-            key={el.id}
-            className={`element-card ${selectedId === el.id ? 'selected' : ''} ${el.isStarter ? 'starter' : 'discovered'}`}
-            onClick={() => onSelect(el)}
-            title={`${el.name}: ${el.description}`}
-          >
-            <span className="element-emoji">{el.emoji}</span>
-            <span className="element-name">{el.name}</span>
-          </button>
-        ))}
+        {filtered.map((el) => {
+          const rarityClass = el.rarity ? `rarity-${el.rarity}` : ''
+          return (
+            <button
+              key={el.id}
+              className={`element-card ${selectedId === el.id ? 'selected' : ''} ${el.isStarter ? 'starter' : 'discovered'} ${rarityClass}`}
+              onClick={() => onSelect(el)}
+              title={`${el.name}: ${el.description}`}
+            >
+              <span className="element-emoji">{el.emoji}</span>
+              <span className="element-name">{el.name}</span>
+            </button>
+          )
+        })}
         {filtered.length === 0 && (
           <div className="library-empty">没有找到匹配的元素</div>
         )}

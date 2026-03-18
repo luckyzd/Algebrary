@@ -1,10 +1,21 @@
+export type Rarity = 'common' | 'rare' | 'epic' | 'legendary'
+
+export const RARITY_LABELS: Record<Rarity, string> = {
+  common: '普通',
+  rare: '稀有',
+  epic: '史诗',
+  legendary: '传说',
+}
+
 export interface Element {
   id: string
   name: string
   emoji: string
   description: string
+  rarity?: Rarity
   discoveredAt?: number
   isStarter?: boolean
+  isCustom?: boolean
 }
 
 export type Operator = '+' | '-' | '×' | '÷'

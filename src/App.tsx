@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react'
 import type { Element, Operator, AIConfig, Equation, AchievementContext } from './types'
-import { pickRandomStarters } from './types'
+import { pickRandomStarters, RARITY_LABELS } from './types'
 import { ACHIEVEMENTS } from './achievements'
 import {
   loadElements,
@@ -74,6 +74,17 @@ export default function App() {
     nextSlot.current = side
   }
 
+  function handleSetCustom(side: SlotTarget, el: Element) {
+    if (side === 'left') setLeft(el)
+    else setRight(el)
+    const exists = elements.some((e) => e.name === el.name)
+    if (!exists) {
+      const updated = [...elements, { ...el, isCustom: true }]
+      setElements(updated)
+      saveElements(updated)
+    }
+  }
+
   function checkAchievements(
     newElements: Element[],
     newEquations: Equation[],
@@ -121,11 +132,14 @@ export default function App() {
       newElements = [...elements, eq.result]
       setElements(newElements)
       saveElements(newElements)
+      const rarityTag = eq.result.rarity && eq.result.rarity !== 'common'
+        ? `【${RARITY_LABELS[eq.result.rarity]}】`
+        : ''
       addToast(
         eq.result.emoji,
-        '新元素发现！',
+        `${rarityTag}新元素发现！`,
         `${eq.result.name} — ${eq.result.description}`,
-        'discovery',
+        eq.result.rarity === 'legendary' ? 'achievement' : 'discovery',
       )
     }
 
@@ -197,6 +211,7 @@ export default function App() {
           right={right}
           aiConfig={aiConfig}
           onClearSlot={handleClearSlot}
+          onSetCustom={handleSetCustom}
           onResult={handleResult}
           onError={handleError}
         />
