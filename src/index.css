@@ -758,7 +758,7 @@ body::before {
 
 .preset-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 8px;
 }
 
@@ -798,6 +798,41 @@ body::before {
   font-size: 0.72rem;
   font-weight: 600;
   white-space: nowrap;
+}
+
+.format-toggle {
+  display: flex;
+  gap: 0;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.format-btn {
+  flex: 1;
+  padding: 8px 12px;
+  background: var(--bg-card);
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+  font-family: inherit;
+}
+
+.format-btn:first-child {
+  border-right: 1px solid var(--border);
+}
+
+.format-btn:hover {
+  color: var(--text-secondary);
+  background: var(--bg-card-hover);
+}
+
+.format-btn.active {
+  background: var(--accent);
+  color: white;
 }
 
 .field {

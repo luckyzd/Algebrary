@@ -53,7 +53,11 @@ export function saveAchievements(ids: string[]): void {
 }
 
 export function loadAIConfig(): AIConfig {
-  return safeGet<AIConfig>(STORAGE_KEYS.aiConfig, { ...DEFAULT_AI_CONFIG })
+  const saved = safeGet<AIConfig>(STORAGE_KEYS.aiConfig, { ...DEFAULT_AI_CONFIG })
+  if (!saved.apiFormat) {
+    saved.apiFormat = saved.endpoint?.includes('anthropic') ? 'anthropic' : 'openai'
+  }
+  return saved
 }
 
 export function saveAIConfig(config: AIConfig): void {

@@ -24,6 +24,63 @@ const OPERATOR_LABEL: Record<Operator, string> = {
   '÷': '除法（提取）',
 }
 
+function buildOpenAIRequest(userMessage: string, config: AIConfig) {
+  return {
+    url: `${config.endpoint}/chat/completions`,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${config.apiKey}`,
+    },
+    body: {
+      model: config.model,
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: userMessage },
+      ],
+      temperature: 0.8,
+      max_tokens: 200,
+    },
+  }
+}
+
+function buildAnthropicRequest(userMessage: string, config: AIConfig) {
+  return {
+    url: `${config.endpoint}/messages`,
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': config.apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: {
+      model: config.model,
+      system: SYSTEM_PROMPT,
+      messages: [{ role: 'user', content: userMessage }],
+      temperature: 0.8,
+      max_tokens: 200,
+    },
+  }
+}
+
+function extractContentFromResponse(
+  data: Record<string, unknown>,
+  format: AIConfig['apiFormat'],
+): string {
+  if (format === 'anthropic') {
+    const content = data.content as Array<{ type: string; text: string }> | undefined
+    if (content && content.length > 0) {
+      const textBlock = content.find((b) => b.type === 'text')
+      return textBlock?.text ?? ''
+    }
+    return ''
+  }
+
+  const choices = data.choices as
+    | Array<{ message: { content: string } }>
+    | undefined
+  return choices?.[0]?.message?.content ?? ''
+}
+
 export async function computeEquation(
   left: Element,
   operator: Operator,
@@ -32,21 +89,15 @@ export async function computeEquation(
 ): Promise<Element> {
   const userMessage = `请计算：${left.emoji} ${left.name} ${operator} ${right.emoji} ${right.name} = ?\n运算类型：${OPERATOR_LABEL[operator]}`
 
-  const response = await fetch(`${config.endpoint}/chat/completions`, {
+  const req =
+    config.apiFormat === 'anthropic'
+      ? buildAnthropicRequest(userMessage, config)
+      : buildOpenAIRequest(userMessage, config)
+
+  const response = await fetch(req.url, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${config.apiKey}`,
-    },
-    body: JSON.stringify({
-      model: config.model,
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: userMessage },
-      ],
-      temperature: 0.8,
-      max_tokens: 200,
-    }),
+    headers: req.headers,
+    body: JSON.stringify(req.body),
   })
 
   if (!response.ok) {
@@ -55,7 +106,7 @@ export async function computeEquation(
   }
 
   const data = await response.json()
-  const content: string = data.choices?.[0]?.message?.content ?? ''
+  const content = extractContentFromResponse(data, config.apiFormat)
 
   const jsonMatch = content.match(/\{[\s\S]*?\}/)
   if (!jsonMatch) throw new Error('AI 返回格式异常，请重试')

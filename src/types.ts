@@ -32,10 +32,13 @@ export interface AchievementContext {
   operatorUsage: Record<Operator, number>
 }
 
+export type ApiFormat = 'openai' | 'anthropic'
+
 export interface AIConfig {
   endpoint: string
   apiKey: string
   model: string
+  apiFormat: ApiFormat
 }
 
 export const STARTER_ELEMENTS: Element[] = [
@@ -53,4 +56,5 @@ export const DEFAULT_AI_CONFIG: AIConfig = {
   endpoint: 'https://api.openai.com/v1',
   apiKey: '',
   model: 'gpt-4o-mini',
+  apiFormat: 'openai',
 }

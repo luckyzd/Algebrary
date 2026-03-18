@@ -1,20 +1,22 @@
 import { useState } from 'react'
-import type { AIConfig } from '../types'
+import type { AIConfig, ApiFormat } from '../types'
 
 interface Preset {
   name: string
   endpoint: string
   model: string
   icon: string
+  apiFormat: ApiFormat
 }
 
 const PRESETS: Preset[] = [
-  { name: '智谱 GLM', endpoint: 'https://open.bigmodel.cn/api/paas/v4', model: 'glm-4-flash', icon: '🧠' },
-  { name: 'OpenAI', endpoint: 'https://api.openai.com/v1', model: 'gpt-4o-mini', icon: '🤖' },
-  { name: 'DeepSeek', endpoint: 'https://api.deepseek.com/v1', model: 'deepseek-chat', icon: '🐋' },
-  { name: 'Moonshot', endpoint: 'https://api.moonshot.cn/v1', model: 'moonshot-v1-8k', icon: '🌙' },
-  { name: '通义千问', endpoint: 'https://dashscope.aliyuncs.com/compatible-mode/v1', model: 'qwen-turbo', icon: '☁️' },
-  { name: '百度千帆', endpoint: 'https://qianfan.baidubce.com/v2', model: 'ernie-speed-128k', icon: '🔵' },
+  { name: '智谱 GLM', endpoint: 'https://open.bigmodel.cn/api/paas/v4', model: 'glm-4-flash', icon: '🧠', apiFormat: 'openai' },
+  { name: 'OpenAI', endpoint: 'https://api.openai.com/v1', model: 'gpt-4o-mini', icon: '🤖', apiFormat: 'openai' },
+  { name: 'Claude', endpoint: 'https://api.anthropic.com/v1', model: 'claude-sonnet-4-20250514', icon: '🎭', apiFormat: 'anthropic' },
+  { name: 'DeepSeek', endpoint: 'https://api.deepseek.com/v1', model: 'deepseek-chat', icon: '🐋', apiFormat: 'openai' },
+  { name: 'Moonshot', endpoint: 'https://api.moonshot.cn/v1', model: 'moonshot-v1-8k', icon: '🌙', apiFormat: 'openai' },
+  { name: '通义千问', endpoint: 'https://dashscope.aliyuncs.com/compatible-mode/v1', model: 'qwen-turbo', icon: '☁️', apiFormat: 'openai' },
+  { name: '百度千帆', endpoint: 'https://qianfan.baidubce.com/v2', model: 'ernie-speed-128k', icon: '🔵', apiFormat: 'openai' },
 ]
 
 interface SettingsModalProps {
@@ -31,10 +33,12 @@ export default function SettingsModal({
   const [endpoint, setEndpoint] = useState(config.endpoint)
   const [apiKey, setApiKey] = useState(config.apiKey)
   const [model, setModel] = useState(config.model)
+  const [apiFormat, setApiFormat] = useState<ApiFormat>(config.apiFormat)
 
   function handlePreset(preset: Preset) {
     setEndpoint(preset.endpoint)
     setModel(preset.model)
+    setApiFormat(preset.apiFormat)
   }
 
   function handleSave() {
@@ -42,6 +46,7 @@ export default function SettingsModal({
       endpoint: endpoint.replace(/\/+$/, ''),
       apiKey: apiKey.trim(),
       model: model.trim(),
+      apiFormat,
     })
     onClose()
   }
@@ -58,8 +63,8 @@ export default function SettingsModal({
 
         <div className="modal-body">
           <p className="settings-note">
-            Algebrary 使用 AI 来计算万物之间的运算。请配置你的 AI 模型（支持所有
-            OpenAI 兼容 API）。
+            Algebrary 使用 AI 来计算万物之间的运算。支持 OpenAI 兼容 API 和
+            Anthropic Claude API。
           </p>
 
           <div className="field">
@@ -70,7 +75,7 @@ export default function SettingsModal({
                   key={p.name}
                   className={`preset-btn ${endpoint === p.endpoint ? 'active' : ''}`}
                   onClick={() => handlePreset(p)}
-                  title={`${p.endpoint}\n模型: ${p.model}`}
+                  title={`${p.endpoint}\n模型: ${p.model}\n格式: ${p.apiFormat}`}
                 >
                   <span className="preset-icon">{p.icon}</span>
                   <span className="preset-name">{p.name}</span>
@@ -78,7 +83,30 @@ export default function SettingsModal({
               ))}
             </div>
             <span className="field-hint">
-              点击预设自动填充端点和模型，你只需填写 API Key
+              点击预设自动填充端点、模型和 API 格式，你只需填写 API Key
+            </span>
+          </div>
+
+          <div className="field">
+            <span className="field-label">API 格式</span>
+            <div className="format-toggle">
+              <button
+                className={`format-btn ${apiFormat === 'openai' ? 'active' : ''}`}
+                onClick={() => setApiFormat('openai')}
+              >
+                OpenAI 兼容
+              </button>
+              <button
+                className={`format-btn ${apiFormat === 'anthropic' ? 'active' : ''}`}
+                onClick={() => setApiFormat('anthropic')}
+              >
+                Anthropic Claude
+              </button>
+            </div>
+            <span className="field-hint">
+              {apiFormat === 'openai'
+                ? '适用于 OpenAI、智谱 GLM、DeepSeek、Moonshot、通义千问、百度千帆等'
+                : '适用于 Anthropic Claude 系列模型（claude-sonnet-4-20250514、claude-3-haiku 等）'}
             </span>
           </div>
 
@@ -88,7 +116,11 @@ export default function SettingsModal({
               type="url"
               value={endpoint}
               onChange={(e) => setEndpoint(e.target.value)}
-              placeholder="https://api.openai.com/v1"
+              placeholder={
+                apiFormat === 'anthropic'
+                  ? 'https://api.anthropic.com/v1'
+                  : 'https://api.openai.com/v1'
+              }
               className="field-input"
             />
           </label>
@@ -99,7 +131,9 @@ export default function SettingsModal({
               type="password"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
-              placeholder="sk-..."
+              placeholder={
+                apiFormat === 'anthropic' ? 'sk-ant-...' : 'sk-...'
+              }
               className="field-input"
             />
           </label>
@@ -110,11 +144,17 @@ export default function SettingsModal({
               type="text"
               value={model}
               onChange={(e) => setModel(e.target.value)}
-              placeholder="gpt-4o-mini"
+              placeholder={
+                apiFormat === 'anthropic'
+                  ? 'claude-sonnet-4-20250514'
+                  : 'gpt-4o-mini'
+              }
               className="field-input"
             />
             <span className="field-hint">
-              可随意修改为该服务商的其他模型，如 glm-4、glm-4-flash、gpt-4o 等
+              {apiFormat === 'anthropic'
+                ? '推荐：claude-sonnet-4-20250514、claude-3-5-sonnet-20241022、claude-3-haiku-20240307'
+                : '可随意修改为该服务商的其他模型，如 glm-4、deepseek-chat、gpt-4o 等'}
             </span>
           </label>
         </div>
